@@ -1,0 +1,42 @@
+<section data-ng-controller="PokerlogsController" data-ng-init="find()">
+    <div class="page-header">
+        <h1>Your Poker Logs</h1>
+    </div>
+<!--    <div class="list-group">
+        <a data-ng-repeat="pokerlog in pokerlogs" data-ng-href="#!/pokerlogs/{{pokerlog._id}}" class="list-group-item">
+			<small class="list-group-item-text">
+				Posted on
+				<span data-ng-bind="pokerlog.start | date:'medium'"></span>
+				by
+				<span data-ng-bind="pokerlog.user.displayName"></span>
+			</small>
+			<h4 class="list-group-item-heading" data-ng-bind="pokerlog.name"></h4>
+        </a>
+    </div>
+    <div class="alert alert-warning text-center" data-ng-hide="!pokerlogs.$resolved || pokerlogs.length">
+    	No Pokerlogs yet, why don't you <a href="/#!/pokerlogs/create">create one</a>?
+    </div>
+    <table class="table table-condensed table-bordered table-hover">
+        <tr data-ng-repeat="pokerlog in pokerlogs">
+            <td>{{pokerlog.location}}</td>
+            <td>{{pokerlog.start}}</td>
+            <td>{{pokerlog.end}}</td>
+            <td>{{pokerlog.gametype}}</td>
+            <td>{{pokerlog.limits}}</td>
+            <td>{{pokerlog.cashout}}</td>
+            <td>{{pokerlog.placed}}</td>
+            <td>{{pokerlog.buyins}}</td>
+        </tr>
+    </table>-->
+    <div>
+        <a href="/#!/pokerlogs/create" class="btn btn-primary btn-default">Create Log</a>
+    </div>
+    <div>
+        <div class="pokerlog-card col-md-2" data-ng-class="isWinner(pokerlog)" data-ng-repeat="pokerlog in pokerlogs"
+                data-ng-click="navigate(pokerlog._id)">
+            <p>{{pokerlog.location}}</p>
+            <p>{{pokerlog.start | date:'medium'}}</p>
+            <p>{{pokerlog.cashout}}</p>
+        </div>
+    </div>
+</section>

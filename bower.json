@@ -1,0 +1,25 @@
+{
+  "name": "pokerlogger",
+  "version": "0.0.1",
+  "description": "Poker logging live sessions",
+  "dependencies": {
+    "bootstrap": "~3",
+    "angular": "~1.2",
+    "angular-resource": "~1.2",
+    "angular-mocks": "~1.2",
+    "angular-cookies": "~1.2",
+    "angular-animate": "~1.2",
+    "angular-touch": "~1.2",
+    "angular-sanitize": "~1.2",
+    "angular-bootstrap": "~0.11.2",
+    "angular-ui-utils": "~0.1.1",
+    "angular-ui-router": "~0.2.11",
+    "ng-lodash": "~0.2.3",
+    "jqueryui-timepicker-addon": "~1.5.5",
+    "jquery-ui": "~1.11.4",
+    "angular-bootstrap-datetimepicker": "~0.3.12"
+  },
+  "resolutions": {
+    "angular": "1.2.28"
+  }
+}
