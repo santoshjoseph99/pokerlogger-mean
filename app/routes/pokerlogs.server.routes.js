@@ -9,6 +9,15 @@ module.exports = function(app) {
 		.get(pokerlogs.list)
 		.post(users.requiresLogin, pokerlogs.create);
 
+    app.route('/pokerlogs/count')
+        .get(pokerlogs.count);
+
+    app.route('/pokerlogs/data')
+        .get(pokerlogs.data);
+
+    //app.route('/pokerlogs/:page')
+    //    .get(pokerlogs.page);
+
 	app.route('/pokerlogs/:pokerlogId')
 		.get(pokerlogs.read)
 		.put(users.requiresLogin, pokerlogs.hasAuthorization, pokerlogs.update)

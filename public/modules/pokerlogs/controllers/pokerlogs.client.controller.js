@@ -2,13 +2,28 @@
 
 // Pokerlogs controller
 angular.module('pokerlogs').controller('PokerlogsController', ['$scope', '$stateParams', '$location', 'Authentication',
-    'Pokerlogs', 'lodash', '$window',
-	function($scope, $stateParams, $location, Authentication, Pokerlogs, lodash, $window) {
+    'Pokerlogs', 'lodash', '$window', '$http',
+	function($scope, $stateParams, $location, Authentication, Pokerlogs, lodash, $window, $http) {
 		$scope.authentication = Authentication;
         $scope.tournament = false;
+        $scope.maxSize = 5;
+        $scope.bigCurrentPage = 1;
+        $scope.itemsPerPage = 10;
 
-        $scope.isWinner = function(pokerlog){
-            return pokerlog.cashout > lodash.sum(pokerlog.buyins) ? 'pokerlog-winner' : 'pokerlog-loser';
+        function init(){
+           $http.get('/pokerlogs/count').
+               success(function(data){
+                $scope.bigTotalItems = data;
+               }).
+               error(function(data, status, headers, config){
+
+               });
+        }
+        init();
+
+        $scope.pageChanged = function() {
+            //$log.log('Page changed to: ' + $scope.currentPage);
+            $scope.find($scope.bigCurrentPage-1, 10);
         };
 
 		// Create new Pokerlog
@@ -42,10 +57,6 @@ angular.module('pokerlogs').controller('PokerlogsController', ['$scope', '$state
 			});
 		};
 
-        $scope.navigate = function(id){
-            $location.path('pokerlogs/'+id);
-        };
-
 		// Remove existing Pokerlog
 		$scope.remove = function(pokerlog) {
             if(!$window.confirm('Are you sure you want to remove this log?')){
@@ -78,8 +89,10 @@ angular.module('pokerlogs').controller('PokerlogsController', ['$scope', '$state
 		};
 
 		// Find a list of Pokerlogs
-		$scope.find = function() {
-			$scope.pokerlogs = Pokerlogs.query();
+		$scope.find = function(p, c) {
+            var page = p || 0;
+            var count = c || 10;
+			$scope.pokerlogs = Pokerlogs.query({page:page,count:count});
 		};
 
 		// Find existing Pokerlog

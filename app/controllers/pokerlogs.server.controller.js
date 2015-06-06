@@ -72,16 +72,56 @@ exports.delete = function(req, res) {
 /**
  * List of Pokerlogs
  */
-exports.list = function(req, res) { 
-	Pokerlog.find().sort('-created').populate('user', 'displayName').exec(function(err, pokerlogs) {
+exports.list = function(req, res) {
+    var count = req.query.count || 100;
+    var page = (req.query.page || 0)*count;
+    console.log('DEBUG list:', page, count);
+    //TODO: sort parameter
+    Pokerlog.find().sort('-created').skip(page).limit(count).populate('user', 'displayName').exec(function(err, pokerlogs) {
+	//Pokerlog.find().sort('-created').populate('user', 'displayName').exec(function(err, pokerlogs) {
 		if (err) {
 			return res.status(400).send({
 				message: errorHandler.getErrorMessage(err)
 			});
 		} else {
+            console.log('DEBUG list:',pokerlogs.length);
 			res.jsonp(pokerlogs);
 		}
 	});
+};
+
+exports.count = function(req, res){
+    Pokerlog.find().count(function(err, count){
+        if(err){
+            return res.status(400).send({
+                message: errorHandler.getErrorMessage(err)
+            });
+        } else {
+            res.json(count);
+        }
+    });
+};
+
+exports.data = function(req, res){
+  for(var i=0; i < 100; i++){
+      Pokerlog.create({location: 'win-river'+i, gametype: 'Limit Holdem', buyins: [100+i], cashout: 200+i });
+  }
+};
+
+exports.page = function(req, res){
+    console.log('page', req.params.page, req.query.count);
+    var count = req.query.count || 100;
+    var page = (req.params.page || 0)*count;
+    //TODO: sort parameter
+    Pokerlog.find().sort('-created').skip(page).limit(count).populate('user', 'displayName').exec(function(err, pokerlogs) {
+        if (err) {
+            return res.status(400).send({
+                message: errorHandler.getErrorMessage(err)
+            });
+        } else {
+            res.jsonp(pokerlogs);
+        }
+    });
 };
 
 /**
