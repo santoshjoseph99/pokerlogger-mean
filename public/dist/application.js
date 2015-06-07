@@ -5,7 +5,7 @@ var ApplicationConfiguration = (function() {
 	// Init module configuration options
 	var applicationModuleName = 'pokerlogger';
 	var applicationModuleVendorDependencies = ['ngResource', 'ngCookies',  'ngAnimate',  'ngTouch',  'ngSanitize',
-		'ui.router', 'ui.bootstrap', 'ui.utils', 'ngLodash'];
+		'ui.router', 'ui.bootstrap', 'ui.utils', 'ngLodash', 'ui.bootstrap.datetimepicker'];
 
 	// Add a new vertical module
 	var registerModule = function(moduleName, dependencies) {
@@ -303,22 +303,41 @@ angular.module('pokerlogs').config(['$stateProvider',
 'use strict';
 
 // Pokerlogs controller
-angular.module('pokerlogs').controller('PokerlogsController', ['$scope', '$stateParams', '$location', 'Authentication', 'Pokerlogs',
-	function($scope, $stateParams, $location, Authentication, Pokerlogs) {
+angular.module('pokerlogs').controller('PokerlogsController', ['$scope', '$stateParams', '$location', 'Authentication',
+    'Pokerlogs', 'lodash', '$window', '$http',
+	function($scope, $stateParams, $location, Authentication, Pokerlogs, lodash, $window, $http) {
 		$scope.authentication = Authentication;
+        $scope.tournament = false;
+        $scope.maxSize = 5;
+        $scope.bigCurrentPage = 1;
+        $scope.itemsPerPage = 10;
+        $scope.sort = 'created';
 
-        $scope.isWinner = function(pokerlog){
-            return 'pokerlog-winner';
+        function init(){
+           $http.get('/pokerlogs/count').
+               success(function(data){
+                $scope.bigTotalItems = data;
+               }).
+               error(function(data, status, headers, config){
+
+               });
+        }
+        init();
+
+        $scope.pageChanged = function() {
+            $scope.find($scope.bigCurrentPage-1, 10, $scope.sort);
+        };
+
+        $scope.sortUpdate = function(){
+            $scope.find(0, 10, $scope.sort);
         };
 
 		// Create new Pokerlog
 		$scope.create = function() {
 
-            var buyins = this.buyins.split(',');
-            var buyinsArray = [];
-            for(var i=0; i < buyins.length; i++){
-               buyinsArray.push(parseInt(buyins[i]));
-            }
+            var buyinsArray = lodash.map(this.buyins.split(','), function(e){
+                return parseInt(e);
+            });
 
 			// Create new Pokerlog object
 			var pokerlog = new Pokerlogs ({
@@ -329,7 +348,8 @@ angular.module('pokerlogs').controller('PokerlogsController', ['$scope', '$state
                 cashout: this.cashout,
                 limits: this.limits,
                 placed: this.placed,
-                buyins: buyinsArray
+                buyins: buyinsArray,
+                notes: this.notes
 			});
 
 			// Redirect after save
@@ -345,7 +365,10 @@ angular.module('pokerlogs').controller('PokerlogsController', ['$scope', '$state
 
 		// Remove existing Pokerlog
 		$scope.remove = function(pokerlog) {
-			if ( pokerlog ) { 
+            if(!$window.confirm('Are you sure you want to remove this log?')){
+                return;
+            }
+			if ( pokerlog ) {
 				pokerlog.$remove();
 
 				for (var i in $scope.pokerlogs) {
@@ -372,8 +395,11 @@ angular.module('pokerlogs').controller('PokerlogsController', ['$scope', '$state
 		};
 
 		// Find a list of Pokerlogs
-		$scope.find = function() {
-			$scope.pokerlogs = Pokerlogs.query();
+		$scope.find = function(p, c, s) {
+            var page = p || 0;
+            var count = c || 10;
+            var sort = s || 'created';
+			$scope.pokerlogs = Pokerlogs.query({page: page,count: count,sort: sort});
 		};
 
 		// Find existing Pokerlog
@@ -381,6 +407,34 @@ angular.module('pokerlogs').controller('PokerlogsController', ['$scope', '$state
 			$scope.pokerlog = Pokerlogs.get({ 
 				pokerlogId: $stateParams.pokerlogId
 			});
+            $scope.pokerlog.$promise.then(function(pl){
+                $scope.tournament = typeof(pl.limits) === 'undefined';
+            });
+		};
+	}
+]);
+
+'use strict';
+
+angular.module('pokerlogs').directive('pokerLog', ['lodash', '$location',
+    function(lodash, $location) {
+		return {
+            templateUrl: 'modules/pokerlogs/directives/pokerlog.html',
+			restrict: 'E',
+            replace: true,
+            scope: {
+                pokerlog: '='
+            },
+			link: function postLink(scope, element, attrs) {
+
+                scope.isWinner = function(){
+                    return scope.pokerlog.cashout > lodash.sum(scope.pokerlog.buyins) ? 'pokerlog-winner' : 'pokerlog-loser';
+                };
+
+                scope.navigate = function(){
+                    $location.path('pokerlogs/'+scope.pokerlog._id);
+                };
+			}
 		};
 	}
 ]);
@@ -507,6 +561,7 @@ angular.module('users').controller('AuthenticationController', ['$scope', '$http
 		};
 	}
 ]);
+
 'use strict';
 
 angular.module('users').controller('PasswordController', ['$scope', '$stateParams', '$http', '$location', 'Authentication',
